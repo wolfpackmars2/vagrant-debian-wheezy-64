@@ -1,5 +1,14 @@
 ## About
 
+FIRST:
+ 1. This is a heavily customized modification to the forked code for my very specific use case.
+ 2. I don't consider this implementation to be suitable for use by others
+ 3. As of 11 Dec 2013, the preseed files work.  This is using the most recent version of Virtualbox for Windows and Debian 7.2 64-Bit.
+ 4. Setting up the VM is done using Virtualbox in the Windows Host
+ 5. A separate Debian Guest is used for building the custom.iso install image
+ 6. Creating the Vagrant .box is done manually in Windows.
+ 7. I may clean this up in the future and make it more "public friendly"
+
 This script will:
 
  1. download the `Debian 7.2 "Wheezy"` server, 64bit iso
@@ -8,8 +17,6 @@ This script will:
 
 ## Requirements
 
- * Oracle VM VirtualBox
- * Vagrant
  * mkisofs
  * 7zip
 
