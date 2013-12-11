@@ -8,6 +8,7 @@ FIRST:
  5. A separate Debian Guest is used for building the custom.iso install image
  6. Creating the Vagrant .box is done manually in Windows.
  7. I may clean this up in the future and make it more "public friendly"
+ 8. Some things are hard coded which shouldn't be.  For example, the final line copies the custom.iso to my sf_shared folder so I can access the iso on my Windows Host.
 
 This script will:
 
