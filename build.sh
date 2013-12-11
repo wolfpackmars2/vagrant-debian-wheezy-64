@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # make sure we have dependencies
-hash vagrant 2>/dev/null || { echo >&2 "ERROR: vagrant not found.  Aborting."; exit 1; }
-hash VBoxManage 2>/dev/null || { echo >&2 "ERROR: VBoxManage not found.  Aborting."; exit 1; }
+#hash vagrant 2>/dev/null || { echo >&2 "ERROR: vagrant not found.  Aborting."; exit 1; }
+#hash VBoxManage 2>/dev/null || { echo >&2 "ERROR: VBoxManage not found.  Aborting."; exit 1; }
 hash 7z 2>/dev/null || { echo >&2 "ERROR: 7z not found. Aborting."; exit 1; }
 
-VBOX_VERSION="$(VBoxManage --version)"
+#VBOX_VERSION="$(VBoxManage --version)"
+VBOX_VERSION="4.3.4"
 
 if hash mkisofs 2>/dev/null; then
   MKISOFS="$(which mkisofs)"
@@ -32,22 +33,23 @@ FOLDER_BUILD="${FOLDER_BASE}/build"
 FOLDER_VBOX="${FOLDER_BUILD}/vbox"
 FOLDER_ISO_CUSTOM="${FOLDER_BUILD}/iso/custom"
 FOLDER_ISO_INITRD="${FOLDER_BUILD}/iso/initrd"
+MD5="md5sum"
 
-# Parameter changes from 4.2 to 4.3
-if [[ "$VBOX_VERSION" < 4.3 ]]; then
-  PORTCOUNT="--sataportcount 1"
-else
-  PORTCOUNT="--portcount 1"
-fi
+## Parameter changes from 4.2 to 4.3
+#if [[ "$VBOX_VERSION" < 4.3 ]]; then
+#  PORTCOUNT="--sataportcount 1"
+#else
+#  PORTCOUNT="--portcount 1"
+#fi
 
-if [ $OSTYPE = "linux-gnu" ];
-then
-  MD5="md5sum"
-  ISO_GUESTADDITIONS="/usr/share/virtualbox/VBoxGuestAdditions.iso"
-else
-  MD5="md5 -q"
-  ISO_GUESTADDITIONS="/Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso"
-fi
+#if [ $OSTYPE = "linux-gnu" ];
+#then
+#  MD5="md5sum"
+#  ISO_GUESTADDITIONS="/usr/share/virtualbox/VBoxGuestAdditions.iso"
+#else
+#  MD5="md5 -q"
+#  ISO_GUESTADDITIONS="/Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso"
+#fi
 
 # start with a clean slate
 if [ -d "${FOLDER_BUILD}" ]; then
@@ -63,10 +65,10 @@ if [ -f "${FOLDER_BASE}/${BOX}.box" ]; then
   echo "Removing old ${BOX}.box" ...
   rm "${FOLDER_BASE}/${BOX}.box"
 fi
-if VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
-  echo "Unregistering vm ..."
-  VBoxManage unregistervm "${BOX}" --delete
-fi
+#if VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
+#  echo "Unregistering vm ..."
+#  VBoxManage unregistervm "${BOX}" --delete
+#fi
 
 # Setting things back up again
 mkdir -p "${FOLDER_ISO}"
@@ -146,65 +148,72 @@ if [ ! -e "${FOLDER_ISO}/custom.iso" ]; then
     -o "${FOLDER_ISO}/custom.iso" "${FOLDER_ISO_CUSTOM}"
 fi
 
-echo "Creating VM Box..."
-# create virtual machine
-if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
-  VBoxManage createvm \
-    --name "${BOX}" \
-    --ostype Debian_64 \
-    --register \
-    --basefolder "${FOLDER_VBOX}"
+echo "Copying iso to shared folder"
+if [ -f "/media/sf_shared/debian-7.2.0-amd64-netinst-vagrant_custom.iso" ]; then
+  echo "Removing custom iso ..."
+  rm "/media/sf_shared/debian-7.2.0-amd64-netinst-vagrant_custom.iso"
+fi
+cp "${FOLDER_ISO}/custom.iso" "/media/sf_shared/debian-7.2.0-amd64-netinst-vagrant_custom.iso"
 
-  VBoxManage modifyvm "${BOX}" \
-    --memory 360 \
-    --boot1 dvd \
-    --boot2 disk \
-    --boot3 none \
-    --boot4 none \
-    --vram 12 \
-    --pae off \
-    --rtcuseutc on
-
-  VBoxManage storagectl "${BOX}" \
-    --name "IDE Controller" \
-    --add ide \
-    --controller PIIX4 \
-    --hostiocache on
-
-  VBoxManage storageattach "${BOX}" \
-    --storagectl "IDE Controller" \
-    --port 1 \
-    --device 0 \
-    --type dvddrive \
-    --medium "${FOLDER_ISO}/custom.iso"
-
-  VBoxManage storagectl "${BOX}" \
-    --name "SATA Controller" \
-    --add sata \
-    --controller IntelAhci \
-    $PORTCOUNT \
-    --hostiocache off
-
-  VBoxManage createhd \
-    --filename "${FOLDER_VBOX}/${BOX}/${BOX}.vdi" \
-    --size 40960
-
-  VBoxManage storageattach "${BOX}" \
-    --storagectl "SATA Controller" \
-    --port 0 \
-    --device 0 \
-    --type hdd \
-    --medium "${FOLDER_VBOX}/${BOX}/${BOX}.vdi"
-
-  VBoxManage startvm "${BOX}" --type headless
-
-  echo -n "Waiting for installer to finish "
-  while VBoxManage list runningvms | grep "${BOX}" >/dev/null; do
-    sleep 20
-    echo -n "."
-  done
-  echo ""
-
+#echo "Creating VM Box..."
+## create virtual machine
+#if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
+#  VBoxManage createvm \
+#    --name "${BOX}" \
+#    --ostype Debian_64 \
+#    --register \
+#    --basefolder "${FOLDER_VBOX}"
+#
+#  VBoxManage modifyvm "${BOX}" \
+#    --memory 360 \
+#    --boot1 dvd \
+#    --boot2 disk \
+#    --boot3 none \
+#    --boot4 none \
+#    --vram 12 \
+#    --pae off \
+#    --rtcuseutc on
+#
+#  VBoxManage storagectl "${BOX}" \
+#    --name "IDE Controller" \
+#    --add ide \
+#    --controller PIIX4 \
+#    --hostiocache on
+#
+#  VBoxManage storageattach "${BOX}" \
+#    --storagectl "IDE Controller" \
+#    --port 1 \
+#    --device 0 \
+#    --type dvddrive \
+#    --medium "${FOLDER_ISO}/custom.iso"
+#
+#  VBoxManage storagectl "${BOX}" \
+#    --name "SATA Controller" \
+#    --add sata \
+#    --controller IntelAhci \
+#    $PORTCOUNT \
+#    --hostiocache off
+#
+#  VBoxManage createhd \
+#    --filename "${FOLDER_VBOX}/${BOX}/${BOX}.vdi" \
+#    --size 40960
+#
+#  VBoxManage storageattach "${BOX}" \
+#    --storagectl "SATA Controller" \
+#    --port 0 \
+#    --device 0 \
+#    --type hdd \
+#    --medium "${FOLDER_VBOX}/${BOX}/${BOX}.vdi"
+#
+#  VBoxManage startvm "${BOX}" --type headless
+#
+#  echo -n "Waiting for installer to finish "
+#  while VBoxManage list runningvms | grep "${BOX}" >/dev/null; do
+#    sleep 20
+#    echo -n "."
+#  done
+#  echo ""
+#
 #   # Forward SSH
 #   VBoxManage modifyvm "${BOX}" \
 #     --natpf1 "guestssh,tcp,,2222,,22"
@@ -243,10 +252,10 @@ if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
 #     --device 0 \
 #     --type dvddrive \
 #     --medium emptydrive
-fi
+#fi
 
-echo "Building Vagrant Box ..."
-vagrant package --base "${BOX}" --output "${BOX}.box"
+#echo "Building Vagrant Box ..."
+#vagrant package --base "${BOX}" --output "${BOX}.box"
 
 # references:
 # http://blog.ericwhite.ca/articles/2009/11/unattended-debian-lenny-install/
